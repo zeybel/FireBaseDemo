@@ -112,6 +112,7 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
                 registerUser();
                 break;
             case R.id.btnSignInPage:
+                finish();
                 Intent intent = new Intent(SignUpActivity.this , MainActivity.class);
                 startActivity(intent);
                 break;

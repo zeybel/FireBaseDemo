@@ -99,6 +99,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         });
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        if (mAuth.getCurrentUser() != null) {
+            finish();
+            Intent intent = new Intent(MainActivity.this, ProfileActivity.class);
+            startActivity(intent);
+        }
+    }
 
     @Override
     public void onClick(View v) {
@@ -107,6 +117,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 userLogin();
                 break;
             case R.id.btnSignUpPage:
+                finish();
                 Intent intent = new Intent(this, SignUpActivity.class);
                 startActivity(intent);
                 break;
