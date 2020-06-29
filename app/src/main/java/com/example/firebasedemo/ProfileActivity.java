@@ -8,7 +8,7 @@ import android.content.ContentResolver;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
+import android.util.Patterns;
 import android.view.View;
 import android.webkit.MimeTypeMap;
 import android.widget.Button;
@@ -18,7 +18,6 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.bumptech.glide.Glide;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -29,19 +28,19 @@ import com.google.firebase.auth.UserProfileChangeRequest;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
 public class ProfileActivity extends AppCompatActivity {
 
     private static final int CHOOSEN_IMAGE = 101;
-    EditText mEditText;
+    EditText mNameEditText, mSurnameEditText, mAgeEditText;
     ImageView mImageView;
     Uri uriProfileImage;
     ProgressBar mProgressBar;
     String profileImageUrl;
     FirebaseAuth mAuth;
+    FirebaseUser currentFirebaseUser;
 
     TextView mTextView;
     Button mUploadButton;
@@ -57,11 +56,15 @@ public class ProfileActivity extends AppCompatActivity {
         mImageView = findViewById(R.id.cameraImage);
         mProgressBar = findViewById(R.id.progressBar3);
         mAuth = FirebaseAuth.getInstance();
+        currentFirebaseUser = mAuth.getCurrentUser();
 
-        mStorageRef = FirebaseStorage.getInstance().getReference("photos");
-        mDatabaseRef = FirebaseDatabase.getInstance().getReference("usernames");
+        mStorageRef = FirebaseStorage.getInstance().getReference("profilephotos");
+        mDatabaseRef = FirebaseDatabase.getInstance().getReference("userdetails");
 
-        mEditText = findViewById(R.id.nameEditText);
+        mNameEditText = findViewById(R.id.nameEditText);
+        mSurnameEditText = findViewById(R.id.surnameEditText);
+        mAgeEditText = findViewById(R.id.ageEditTextNumber);
+
         mUploadButton = findViewById(R.id.btnSave);
 
 
@@ -76,29 +79,14 @@ public class ProfileActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 fileUploader();
-//              saveUserInfo();
             }
         });
-
- //       appJourneyStarts();
-  //      loadUserInfo();
     }
 
     private void appJourneyStarts() {
         finish();
         Intent intent = new Intent(this, Journey.class);
         startActivity(intent);
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-
-        if (mAuth.getCurrentUser() == null) {
-            finish();
-            Intent intent = new Intent(ProfileActivity.this, MainActivity.class);
-            startActivity(intent);
-        }
     }
 
     private String getFileExtention(Uri uri) {
@@ -109,6 +97,27 @@ public class ProfileActivity extends AppCompatActivity {
 
     private void fileUploader() {
 
+        String name = mNameEditText.getText().toString();
+        String surname = mSurnameEditText.getText().toString();
+        String age = mAgeEditText.getText().toString();
+
+        if (name.isEmpty()) {
+            mNameEditText.setError("İsim girmeniz gereklidir.");
+            mNameEditText.requestFocus();
+            return;
+        }
+
+        if (surname.isEmpty()) {
+            mSurnameEditText.setError("Soyad girmeniz gereklidir");
+            mSurnameEditText.requestFocus();
+            return;
+        }
+
+        if (age.isEmpty()) {
+            mAgeEditText.setError("Yaş bilgisi girmeniz gereklidir");
+            mAgeEditText.requestFocus();
+            return;
+        }
 
         if (uriProfileImage != null) {
             mProgressBar.setVisibility(View.VISIBLE);
@@ -121,82 +130,26 @@ public class ProfileActivity extends AppCompatActivity {
                             mProgressBar.setVisibility(View.GONE);
                             Toast.makeText(ProfileActivity.this, "Profil fotoğrafı başarıyla yüklendi", Toast.LENGTH_LONG).show();
 
-                            Upload upload = new Upload(mEditText.getText().toString(),
+                            Upload upload = new Upload(mNameEditText.getText().toString(),
+                                    mSurnameEditText.getText().toString(),
+                                    mAgeEditText.getText().toString(),
                                     taskSnapshot.getMetadata().getReference().getDownloadUrl().toString());
-                            String userName = mDatabaseRef.push().getKey();
-                            mDatabaseRef.child(userName).setValue(upload);
+
+                            String userKey = currentFirebaseUser.getUid();
+                            mDatabaseRef.child(userKey).setValue(upload);
+                            appJourneyStarts();
                         }
                     })
                     .addOnFailureListener(new OnFailureListener() {
                         @Override
                         public void onFailure(@NonNull Exception exception) {
+                            mProgressBar.setVisibility(View.GONE);
                             Toast.makeText(ProfileActivity.this, exception.getMessage(), Toast.LENGTH_LONG).show();
                         }
-                    })
-                    .addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
-                @Override
-                public void onProgress(@NonNull UploadTask.TaskSnapshot taskSnapshot) {
-                    double progress = (100.0 * taskSnapshot.getBytesTransferred() / taskSnapshot.getTotalByteCount());
-                    mProgressBar.setProgress((int) progress);
-                }
-            });
+                    });
+
         } else {
             Toast.makeText(this, "Fotoğraf seçilmedi.", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    private void saveUserInfo() {
-        String displayName = mEditText.getText().toString();
-
-        if (displayName.isEmpty()) {
-            mEditText.setError("İsim girmeniz gerekmektedir");
-            mEditText.requestFocus();
-            return;
-        }
-
-        FirebaseUser user = mAuth.getCurrentUser();
-
-        if (user != null && profileImageUrl != null) {
-            mProgressBar.setVisibility(View.VISIBLE);
-            UserProfileChangeRequest profileChangeRequest = new UserProfileChangeRequest
-                    .Builder().setDisplayName(displayName)
-                    .setPhotoUri(Uri.parse(profileImageUrl))
-                    .build();
-
-            user.updateProfile(profileChangeRequest)
-                    .addOnCompleteListener(new OnCompleteListener<Void>() {
-                        @Override
-                        public void onComplete(@NonNull Task<Void> task) {
-                            if (task.isSuccessful()) {
-                                mProgressBar.setVisibility(View.GONE);
-                                Toast.makeText(ProfileActivity.this, "Profil fotoğrafı yüklendi", Toast.LENGTH_LONG).show();
-                            }
-                        }
-                    });
-        }
-    }
-
-    public void uploadImageToFirebaseStorage() {
-        mStorageRef = FirebaseStorage
-                .getInstance()
-                .getReference("profilepics/" + System.currentTimeMillis() + ".jpg");
-        if (uriProfileImage != null) {
-            mProgressBar.setVisibility(View.VISIBLE);
-            mStorageRef.putFile(uriProfileImage)
-                    .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                        @Override
-                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                            mProgressBar.setVisibility(View.GONE);
-                            profileImageUrl = taskSnapshot.getMetadata().getReference().getDownloadUrl().toString();
-                        }
-                    }).addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception e) {
-                    mProgressBar.setVisibility(View.GONE);
-                    Toast.makeText(ProfileActivity.this, e.getMessage(), Toast.LENGTH_LONG).show();
-                }
-            });
-
         }
     }
 
@@ -225,6 +178,38 @@ public class ProfileActivity extends AppCompatActivity {
 //            } catch (IOException e) {
 //                e.printStackTrace();
 //            }
+        }
+    }
+
+
+    private void saveUserInfo() {
+        String displayName = mNameEditText.getText().toString();
+
+        if (displayName.isEmpty()) {
+            mNameEditText.setError("İsim girmeniz gerekmektedir");
+            mNameEditText.requestFocus();
+            return;
+        }
+
+        FirebaseUser user = mAuth.getCurrentUser();
+
+        if (user != null && profileImageUrl != null) {
+            mProgressBar.setVisibility(View.VISIBLE);
+            UserProfileChangeRequest profileChangeRequest = new UserProfileChangeRequest
+                    .Builder().setDisplayName(displayName)
+                    .setPhotoUri(Uri.parse(profileImageUrl))
+                    .build();
+
+            user.updateProfile(profileChangeRequest)
+                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+                            if (task.isSuccessful()) {
+                                mProgressBar.setVisibility(View.GONE);
+                                Toast.makeText(ProfileActivity.this, "Profil fotoğrafı yüklendi", Toast.LENGTH_LONG).show();
+                            }
+                        }
+                    });
         }
     }
 }

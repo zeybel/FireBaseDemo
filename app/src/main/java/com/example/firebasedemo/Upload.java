@@ -1,27 +1,46 @@
 package com.example.firebasedemo;
 
 public class Upload {
-    private String mUserName;
+    private String mName;
+    private String mSurname;
+    private String mAge;
     private String mProfileImageUrl;
 
     public Upload() {
 
     }
 
-    public Upload(String userName, String profileImageUrl) {
-        if (userName.trim().equals("")) {
-            userName = "No Name";
-        }
-        mUserName = userName;
+    public Upload(String name, String surname, String age,  String profileImageUrl) {
+
+        mName = name;
+        mSurname = surname;
+        mAge = age;
         mProfileImageUrl = profileImageUrl;
+
     }
 
-    public String getUserName() {
-        return mUserName;
+    public String getName() {
+        return mName;
     }
 
-    public void setUserName(String userName) {
-        mUserName = userName;
+    public void setName(String name) {
+        mName = name;
+    }
+
+    public String getSurname() {
+        return mSurname;
+    }
+
+    public void setSurname(String surname) {
+        mSurname = surname;
+    }
+
+    public String getAge() {
+        return mAge;
+    }
+
+    public void setAge(String age) {
+        mAge = age;
     }
 
     public String getProfileImageUrl() {
@@ -31,4 +50,5 @@ public class Upload {
     public void setProfileImageUrl(String profileImageUrl) {
         mProfileImageUrl = profileImageUrl;
     }
+
 }

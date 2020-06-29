@@ -86,14 +86,13 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         ProgressBar.setVisibility(View.GONE);
                         if (task.isSuccessful()) {
+                            finish();
                             Toast.makeText(SignUpActivity.this, "Aramıza hoşgeldin!", Toast.LENGTH_LONG).show();
                             Intent intent = new Intent(SignUpActivity.this, ProfileActivity.class);
-                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                             startActivity(intent);
-                            finish();
                         } else {
                             if (task.getException() instanceof FirebaseAuthUserCollisionException) {
+                                finish();
                                 Toast.makeText(SignUpActivity.this, "Kayıtlı olan bir e-mail girdiniz", Toast.LENGTH_LONG).show();
                                 Intent intent = new Intent(SignUpActivity.this, MainActivity.class);
                                 startActivity(intent);

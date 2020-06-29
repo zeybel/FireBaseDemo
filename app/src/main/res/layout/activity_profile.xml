@@ -36,26 +36,52 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="32dp"
         android:ems="10"
-        android:hint="İsminizi giriniz"
+        android:hint="Ad"
         android:inputType="textPersonName"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/cameraImage" />
 
+    <EditText
+        android:id="@+id/surnameEditText"
+        android:layout_width="307dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:ems="10"
+        android:inputType="textPersonName"
+        android:hint="Soyad"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/nameEditText" />
+
+    <EditText
+        android:id="@+id/ageEditTextNumber"
+        android:layout_width="307dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:ems="10"
+        android:hint="Yaş"
+        android:inputType="number"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/surnameEditText" />
+
     <Button
         android:id="@+id/btnSave"
         android:layout_width="140dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
+        android:layout_marginTop="40dp"
         android:backgroundTint="#0277BD"
         android:text="Kaydet"
         android:textColor="#000000"
         android:textSize="18sp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/nameEditText" />
+        app:layout_constraintTop_toBottomOf="@+id/ageEditTextNumber" />
 
     <ProgressBar
         android:id="@+id/progressBar3"
@@ -67,5 +93,4 @@
         app:layout_constraintEnd_toEndOf="@+id/cameraImage"
         app:layout_constraintStart_toStartOf="@+id/cameraImage"
         app:layout_constraintTop_toTopOf="@+id/cameraImage" />
-
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -23,8 +23,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private static final String TAG = "MainActivity";
 
-    private FirebaseAuth.AuthStateListener mAuthStateListener;
-
     //UI references
     public EditText mEmail, mPassword;
     public Button btnLogin, btnSignUpPage;
@@ -50,6 +48,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         btnSignUpPage.setOnClickListener(this);
 
 
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        if (mAuth.getCurrentUser() != null) {
+            finish();
+            Intent intent = new Intent(MainActivity.this, Journey.class);
+            startActivity(intent);
+        }
     }
 
     private void userLogin() {
@@ -81,33 +90,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
         mProgressBar.setVisibility(View.VISIBLE);
 
-        mAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
-            @Override
-            public void onComplete(@NonNull Task<AuthResult> task) {
-                mProgressBar.setVisibility(View.GONE);
-                if (task.isSuccessful()) {
-                    Toast.makeText(MainActivity.this, "Tekrar Hoşgeldin!", Toast.LENGTH_LONG).show();
-                    Intent intent = new Intent(MainActivity.this, ProfileActivity.class);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    startActivity(intent);
-                    finish();
-                } else {
-                    Toast.makeText(MainActivity.this, "Hatalı e-mail ya da şifre girdiniz.", Toast.LENGTH_LONG).show();
-                }
-            }
-        });
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-
-        if (mAuth.getCurrentUser() != null) {
-            finish();
-            Intent intent = new Intent(MainActivity.this, ProfileActivity.class);
-            startActivity(intent);
-        }
+        mAuth.signInWithEmailAndPassword(email, password)
+                .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        mProgressBar.setVisibility(View.GONE);
+                        if (task.isSuccessful()) {
+                            finish();
+                            Toast.makeText(MainActivity.this, "Tekrar Hoşgeldin!", Toast.LENGTH_LONG).show();
+                            Intent intent = new Intent(MainActivity.this, ProfileActivity.class);
+                            startActivity(intent);
+                            finish();
+                        } else {
+                            Toast.makeText(MainActivity.this, "Hatalı e-mail ya da şifre girdiniz.", Toast.LENGTH_LONG).show();
+                        }
+                    }
+                });
     }
 
     @Override
